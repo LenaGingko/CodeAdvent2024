@@ -8,40 +8,74 @@ import java.util.stream.*;
 
 public class Day03 {
 
-    static List<Integer[]> readFile(){
+    static String readFile(){
         try {
             File file = new File("Daten/Werte3.txt");
             Scanner scanner = new Scanner(file);
 
-            List<Integer[]> muls = new ArrayList<>();
-            String regex = "mul\\((\\d{1,3}),(\\d{1,3})\\)";//https://data.templateroller.com/pdf_docs_html/2638/26387/2638707/page_1_thumb_950.png
-            Pattern pattern = Pattern.compile(regex); //https://www.geeksforgeeks.org/matcher-pattern-method-in-java-with-examples/
-
+            StringBuilder fullText = new StringBuilder();
             while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                Matcher matcher = pattern.matcher(line);
-
-                while (matcher.find()) {
-                    int x = Integer.parseInt(matcher.group(1));
-                    int y = Integer.parseInt(matcher.group(2));
-                    muls.add(new Integer[]{x, y});
-                }
+                fullText.append(scanner.nextLine());
             }
             scanner.close();
-            return muls;
+
+            return fullText.toString();
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
             e.printStackTrace();
-            return new ArrayList<>();
+            return "";
         }
     }
-    public static void main(String[] args) {
-        List<Integer[]> mulList = readFile();
 
-        int sum = 0;
-        for ( Integer[] mul : mulList ) {
-            sum += mul[0] * mul[1];
+    static List<Integer[]> computeInput(String input){
+
+        Pattern regex = Pattern.compile("mul\\((\\d{1,3}),(\\d{1,3})\\)");
+        Pattern doPattern = Pattern.compile("do\\(\\)");
+        Pattern dontPattern = Pattern.compile("don't\\(\\)");
+
+        int currentIndex = 0;
+        List<Integer[]> muls = new ArrayList<>();
+        boolean isEnabled = true;
+
+        Matcher doMatcher = doPattern.matcher(input);
+        Matcher dontMatcher = dontPattern.matcher(input);
+        Matcher regexMatcher = regex.matcher(input);
+
+        while (currentIndex < input.length()) {
+            if (doMatcher.find(currentIndex) && doMatcher.start() == currentIndex) {
+                isEnabled = true;
+                currentIndex = doMatcher.end();
+            } else if (dontMatcher.find(currentIndex) && dontMatcher.start() == currentIndex) {
+                isEnabled = false;
+                currentIndex = dontMatcher.end();
+
+            } else if (regexMatcher.find(currentIndex) && regexMatcher.start() == currentIndex) {
+
+                if (isEnabled) {
+                    int mul1 = Integer.parseInt(regexMatcher.group(1));
+                    int mul2 = Integer.parseInt(regexMatcher.group(2));
+                    muls.add(new Integer[]{mul1, mul2});
+                }
+                currentIndex = regexMatcher.end();
+
+            } else {
+                currentIndex++;
+            }
         }
+        return muls;
+    }
+    public static void main(String[] args) {
+
+        String input = readFile();
+
+        List<Integer[]> mulList = computeInput(input);
+
+        //mulList.forEach(mul -> System.out.println(Arrays.toString(mul)));
+
+        int sum = mulList.stream()
+                .mapToInt(mul -> mul[0] * mul[1])
+                .sum();
+
         System.out.println("Sum: " + sum);
     }
 }
