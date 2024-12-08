@@ -7,34 +7,44 @@ import java.util.*;
 public class Day05 {
 
     public static void main(String[] args) {
-        String[] puzzle = readFile().split("\n");
-        System.out.println("puzzle: " + Arrays.toString(puzzle));
-        //System.out.println("Total XMAS occurrences: " + count );
+        ParsedData data = readFile("Daten/Werte5.txt");
+
+        System.out.println("rules: " + data.rules);
+        System.out.println("updates: " + data.updates);
     }
 
-    static String readFile() {
+    static ParsedData readFile(String filePath) {
+        List<String> rules = new ArrayList<>();
+        List<String> updates = new ArrayList<>();
+        boolean isRuleSection = true;
+
         try {
-            File file = new File("Daten/Werte5.txt");
+            File file = new File(filePath);
             Scanner scanner = new Scanner(file);
 
-            List<Integer> lList = new ArrayList<>();
-            List<Integer> rList = new ArrayList<>();
-
+            // Parse the file line by line
             while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.trim().split("\\s+");//Leerzeichen trennt
-                if (parts.length == 2) {
-                    lList.add(Integer.parseInt(parts[0]));
-                    rList.add(Integer.parseInt(parts[1]));
+                String line = scanner.nextLine().trim();
+
+                // Check for empty line to switch sections
+                if (line.isEmpty()) {
+                    isRuleSection = false; // Switch to updates section
+                    continue;
+                }
+
+                // Add line to the appropriate section
+                if (isRuleSection) {
+                    rules.add(line);
+                } else {
+                    updates.add(line);
                 }
             }
-            scanner.close();
 
-            return "";
+            scanner.close();
         } catch (FileNotFoundException e) {
-            System.out.println("File not found");
-            e.printStackTrace();
-            return "";
+            System.err.println("File not found: " + filePath);
         }
+        return new ParsedData(rules, updates);
     }
+
 }
