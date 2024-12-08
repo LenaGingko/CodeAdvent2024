@@ -2,7 +2,6 @@ package day04;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Day04 {
@@ -11,7 +10,7 @@ public class Day04 {
             //System.out.println("puzzle: " + Arrays.toString(puzzle));
             int count = countXMAS(puzzle);
             System.out.println("Total XMAS occurrences: " + count );
-            System.out.println("Total X-MAS occurrences: " + countXMASPattern(puzzle));
+            System.out.println("Total X-MAS occurrences: " + countXMASPattern(puzzle));//980 too low //1836 falsch, 3000zu hoch
         }
 
         static String readFile() {
@@ -66,17 +65,16 @@ public class Day04 {
         int count = 0;
         int rows = grid.length;
         int cols = grid[0].length();
-/*
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                for (int[] dir : directions) {
-                    if (checkPAttern(grid, row, col, dir[0], dir[1])) {
+
+        for (int row = 0; row < rows - 1; row++) { // X-MAS  3 Zeilen
+            for (int col = 0; col < cols - 1; col++) { // X-MAS 3 Säulen
+                if (grid[row].charAt(col) == 'A'){ // A weil zentrum des Patterns
+                    if (checkXMASPattern(grid, row, col)) {
                         count++;
                     }
                 }
             }
         }
-*/
         return count;
     }
 
@@ -100,5 +98,20 @@ public class Day04 {
         }
 
         return true;
+    }
+
+    static boolean checkXMASPattern(String[] grid, int row, int col) {
+        String mas = "MAS";
+
+        try {                       //top           left
+            boolean topLeft = grid[row - 1].charAt(col - 1) == mas.charAt(0) && grid[row + 1].charAt(col + 1) == mas.charAt(2);
+            boolean topRight = grid[row - 1].charAt(col + 1) == mas.charAt(0) && grid[row + 1].charAt(col - 1) == mas.charAt(2);
+            boolean bottomLeft = grid[row + 1].charAt(col - 1) == mas.charAt(0) && grid[row - 1].charAt(col + 1) == mas.charAt(2);
+            boolean bottomRight = grid[row + 1].charAt(col + 1) == mas.charAt(0) && grid[row - 1].charAt(col - 1) == mas.charAt(2);
+
+            return (topLeft && (bottomLeft ||  topRight)) || ((topRight || bottomLeft) && bottomRight) ;
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
     }
 }
