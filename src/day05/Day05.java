@@ -7,36 +7,85 @@ import java.util.*;
 public class Day05 {
 
     public static void main(String[] args) {
-        ParsedData data = readFile("Daten/Werte5.txt");
+        Data data = readFile("Daten/Werte5.txt");
+
+        List<Integer[]> validUpdates = filterData(data);
 
         System.out.println("rules: " + data.rules);
-        System.out.println("updates: " + data.updates);
+        System.out.println("updates: " + data.updates.stream().map(Object::toString)); //deep 2DArrays
+
+        System.out.println("validUpdates length: " + validUpdates.size() );
     }
 
-    static ParsedData readFile(String filePath) {
-        List<String> rules = new ArrayList<>();
-        List<String> updates = new ArrayList<>();
-        boolean isRuleSection = true;
+    static List<Integer[]> filterData(Data data) {
+        List<Integer[]> validUpdatesList = new ArrayList<>();
+
+        for (Integer[] update : data.updates) {
+            if (isUpdateValid(update, data.rules)) {
+                validUpdatesList.add(update);
+            }
+        }
+        return validUpdatesList;
+    }
+
+    static boolean isUpdateValid(Integer[] update, Map<Integer, Integer> rules) {
+
+        Set<Integer> ruleKeys = rules.keySet();
+
+        //updates loop
+        List<Integer> updateList = Arrays.asList(update);//für contains
+        //wenn nummer in  rules.entrySet()
+        for (Integer i : ruleKeys) {
+            //check key
+            if (updateList.contains(i)) {
+                Integer j = rules.get(i);
+
+                //check value
+                if (updateList.contains(j)) {
+                    int positionKey = updateList.indexOf(i);//stelle in List
+                    int positionValue = updateList.indexOf(j);
+
+                    if (positionKey >= positionValue) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    static Data readFile(String filePath) {
+        Map<Integer, Integer> rules = new HashMap<>();
+        List<Integer[]> updates = new ArrayList<>();
+        boolean linebreak = true;
 
         try {
             File file = new File(filePath);
             Scanner scanner = new Scanner(file);
 
-            // Parse the file line by line
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
 
-                // Check for empty line to switch sections
                 if (line.isEmpty()) {
-                    isRuleSection = false; // Switch to updates section
+                    linebreak = false; //false rules, true updates
                     continue;
                 }
 
-                // Add line to the appropriate section
-                if (isRuleSection) {
-                    rules.add(line);
+                if (linebreak) {
+                    String[] parts = line.split("\\|");
+                    if (parts.length == 2) { //2 werte
+                        int links = Integer.parseInt(parts[0].trim());
+                        int rechts = Integer.parseInt(parts[1].trim());
+                        rules.put(links, rechts);
+                    }
                 } else {
-                    updates.add(line);
+                    String[] updateParts = line.split(",");
+                    Integer[] updateArray = Arrays.stream(updateParts)
+                            .map(String::trim)
+                            .map(Integer::parseInt)
+                            .toArray(Integer[]::new);
+                    updates.add(updateArray);
                 }
             }
 
@@ -44,7 +93,7 @@ public class Day05 {
         } catch (FileNotFoundException e) {
             System.err.println("File not found: " + filePath);
         }
-        return new ParsedData(rules, updates);
-    }
 
+        return new Data(rules, updates);
+    }
 }
