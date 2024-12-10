@@ -3,6 +3,7 @@ package day05;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Day05 {
 
@@ -12,9 +13,28 @@ public class Day05 {
         List<Integer[]> validUpdates = filterData(data);
 
         System.out.println("rules: " + data.rules);
-        System.out.println("updates: " + data.updates.stream().map(Object::toString)); //deep 2DArrays
+        System.out.println("Updates: " +
+                data.updates.stream()
+                        .map(Arrays::toString) // Convert each Integer[] to a string
+                        .collect(Collectors.joining(", ")) // Join them with a comma and space
+        );
+
 
         System.out.println("validUpdates length: " + validUpdates.size() );
+
+        int sum = 0;
+        for (Integer[] update : validUpdates) {
+            int middlePage = findMiddlePage(update);
+            sum += middlePage;
+        }
+
+        // Output the result
+        System.out.println("Summe: " + sum);
+    }
+
+    static int findMiddlePage(Integer[] update) {
+        int middleIndex = update.length / 2;
+        return update[middleIndex];
     }
 
     static List<Integer[]> filterData(Data data) {
