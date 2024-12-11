@@ -11,30 +11,30 @@ public class Day05 {
         Data data = readFile("Daten/Werte5.txt");
 
         List<Integer[]> validUpdates = filterData(data);
-
+        System.out.println("all Updates: " + data.updates.size());
         System.out.println("rules: " + data.rules);
+
         System.out.println("Updates: " +
                 data.updates.stream()
-                        .map(Arrays::toString) // Convert each Integer[] to a string
-                        .collect(Collectors.joining(", ")) // Join them with a comma and space
+                        .map(Arrays::toString)
+                        .collect(Collectors.joining(", "))
         );
 
 
         System.out.println("validUpdates length: " + validUpdates.size() );
 
         int sum = 0;
-        for (Integer[] update : validUpdates) {
-            int middlePage = findMiddlePage(update);
+        for (Integer[] update : validUpdates) { //5891 too high
+            int middlePage = findMiddle(update);
             sum += middlePage;
+            System.out.println("Middle Page von Update: " + Arrays.toString(update) +" = "+ middlePage + " -> " + sum);
         }
-
-        // Output the result
         System.out.println("Summe: " + sum);
     }
 
-    static int findMiddlePage(Integer[] update) {
-        int middleIndex = update.length / 2;
-        return update[middleIndex];
+    static int findMiddle(Integer[] update) {
+        int middle = update.length / 2;
+        return update[middle];
     }
 
     static List<Integer[]> filterData(Data data) {
@@ -44,11 +44,14 @@ public class Day05 {
             if (isUpdateValid(update, data.rules)) {
                 validUpdatesList.add(update);
             }
+            if (!isUpdateValid(update, data.rules)) {
+                System.out.println("Invalid Update: " + Arrays.toString(update));
+            }
         }
         return validUpdatesList;
     }
 
-    static boolean isUpdateValid(Integer[] update, Map<Integer, Integer> rules) {
+    static boolean isUpdateValid(Integer[] update, Map<Integer, List<Integer>> rules) {
 
         Set<Integer> ruleKeys = rules.keySet();
 
@@ -56,27 +59,22 @@ public class Day05 {
         List<Integer> updateList = Arrays.asList(update);//für contains
         //wenn nummer in  rules.entrySet()
         for (Integer i : ruleKeys) {
-            //check key
-            if (updateList.contains(i)) {
-                Integer j = rules.get(i);
+            if (!updateList.contains(i)) continue;
+            for (Integer j : rules.get(i)) {
+                if (!updateList.contains(j)) continue;
+                int positionKey = updateList.indexOf(i);
+                int positionValue = updateList.indexOf(j);
 
-                //check value
-                if (updateList.contains(j)) {
-                    int positionKey = updateList.indexOf(i);//stelle in List
-                    int positionValue = updateList.indexOf(j);
-
-                    if (positionKey >= positionValue) {
-                        return false;
-                    }
+                if (positionKey >= positionValue) {
+                    return false;
                 }
             }
         }
-
         return true;
     }
 
     static Data readFile(String filePath) {
-        Map<Integer, Integer> rules = new HashMap<>();
+        Map<Integer, List<Integer>> rules = new HashMap<>();
         List<Integer[]> updates = new ArrayList<>();
         boolean linebreak = true;
 
@@ -97,7 +95,9 @@ public class Day05 {
                     if (parts.length == 2) { //2 werte
                         int links = Integer.parseInt(parts[0].trim());
                         int rechts = Integer.parseInt(parts[1].trim());
-                        rules.put(links, rechts);
+                        List<Integer> currentRule = rules.getOrDefault(links, new ArrayList<>());
+                        currentRule.add(rechts);
+                        rules.put(links, currentRule);
                     }
                 } else {
                     String[] updateParts = line.split(",");
