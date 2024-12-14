@@ -16,8 +16,7 @@ public class Day06 {
         Guard guard = new Guard();
         guard.computeMap(guardMap);
         System.out.println("Start Position: " + Arrays.toString(guard.getStartPos()));
-        System.out.println("Obstruction Positions: " +
-                guard.getObstructions().stream().map(Arrays::toString).toList());
+        //System.out.println("Obstruction Positions: " + guard.getObstructions().stream().map(Arrays::toString).toList());
 
         guard.move(guardMap);
 
