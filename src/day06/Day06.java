@@ -10,15 +10,18 @@ import java.util.Scanner;
 public class Day06 {
 
     public static void main(String[] args) {
-        String[][] guardMap = readFile();
-        System.out.println("map: " + Arrays.deepToString(guardMap));
+        final String[][] guardMap = readFile();
+        //System.out.println("map: " + Arrays.deepToString(guardMap));
 
         Guard guard = new Guard();
-        guard.move(guardMap);
-        System.out.println("Start Position: " + guard.getMarkedPos());
-        System.out.println("Obstruction Positions: " + Arrays.toString(guard.getStartPos()));
-        System.out.println("Distinct Positions: " + guard.getObstructions());
+        guard.computeMap(guardMap);
+        System.out.println("Start Position: " + Arrays.toString(guard.getStartPos()));
+        System.out.println("Obstruction Positions: " +
+                guard.getObstructions().stream().map(Arrays::toString).toList());
 
+        guard.move(guardMap);
+
+        System.out.println("Distinct Positions: " + guard.getMarkedPos());
     }
 
 
@@ -30,7 +33,7 @@ public class Day06 {
             List<String[]> lines = new ArrayList<>();
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
-                String[] splitted = line.split("\n");
+                String[] splitted = line.split("");
                 lines.add(splitted);
             }
             scanner.close();
