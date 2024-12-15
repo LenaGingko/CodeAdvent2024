@@ -11,7 +11,7 @@ public class Guard {
     private int markedPos = 0;
     private int[] startPos = {-1, -1}; //row,col
 
-    //private List<int[]> obstructions = new ArrayList<>();//nötig?
+    private List<int[]> distinctPos = new ArrayList<>();
 
     private int[][] directions = {
             {-1, 0}, // Up
@@ -31,14 +31,6 @@ public class Guard {
 
         for (int row = 0; row < guardMap.length; row++) {
             for (int col = 0; col < guardMap[row].length; col++) {
-                /*
-                if (guardMap[row][col].equals("#")) {
-                    //System.out.println("Obstacle found at position: (" + row + ", " + col + ")");
-                    int[] obsPos = {row,col};
-                    obstructions.add(obsPos);
-                }
-                */
-
                 if (guardMap[row][col].equals("^")) {
                     startPos[0] = row;
                     startPos[1] = col;
@@ -49,26 +41,49 @@ public class Guard {
 
     public void move(String[][] guardMap) {
         System.out.println("Move Guard");
-        int[] currentPos = startPos;
+        int[] currentPos = startPos;//int[] currentPos = Arrays.copyOf(startPos, startPos.length);
+        int currentDir = 0;//up
 
-        int currentDir = 0;
+        while (true) {
 
-        while(guardMap[currentPos[0]+directions[currentDir][0]]  [currentPos[1]+directions[currentDir][1]].equals(".")){//not #
-            travel(currentPos, directions, currentDir);
+            int[] nextPos = {currentPos[0]+directions[currentDir][0],currentPos[1]+directions[currentDir][1]};
+
+            //check border
+            if (nextPos[0] < 0 || nextPos[0] >= guardMap.length ||
+                    nextPos[1] < 0 || nextPos[1] >= guardMap[0].length) {
+                System.out.println("Grenze!");
+                break;
+            }
+
+            // if #
+            if (guardMap[nextPos[0]][nextPos[1]].equals(".")) {
+                currentPos = travel(currentPos, directions, currentDir);
+
+                nextPos[0] = currentPos[0] + directions[currentDir][0];
+                nextPos[1] = currentPos[1] + directions[currentDir][1];
+
+            } else {
+                currentDir = (currentDir + 1) % directions.length;//rechts
+                System.out.println("TurnRight " + currentDir);
+                System.out.println("Currently at " + Arrays.toString(currentPos));
+            }
         }
-        currentDir = (currentDir + 1) % directions.length;
-        System.out.println("TurnRight " + currentDir);
-        System.out.println("Currently at " + Arrays.toString(currentPos));
-        //go back to while loop with new direction
     }
 
-    private void travel(int[] currentPos, int[][] directions, int currentDir){
-        System.out.println("Current Position: " + Arrays.toString(startPos));
-        markedPos++;
+    private int[] travel(int[] currentPos, int[][] directions, int currentDir){
+        //System.out.println("Current Position: " + Arrays.toString(currentPos));
 
-        int[] nextPos = { currentPos[0]+directions[currentDir][0], currentPos[1]+directions[currentDir][1] };
-        currentPos[0] = nextPos[0];
-        currentPos[1] = nextPos[1];
+        //check distinct
+        int[] positionCopy = Arrays.copyOf(currentPos, currentPos.length); //damit es nicht mitupdatet
+        if (!distinctPos.contains(positionCopy)) {
+            markedPos++;
+            //System.out.println("Positions -> " + markedPos);
+            distinctPos.add(positionCopy);
+        }
+
+        currentPos[0] += directions[currentDir][0];
+        currentPos[1] += directions[currentDir][1];
+        return currentPos;
     }
 
     public int getMarkedPos(){
