@@ -1,8 +1,6 @@
 package day06;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Guard {
 
@@ -11,7 +9,8 @@ public class Guard {
     private int markedPos = 0;
     private int[] startPos = {-1, -1}; //row,col
 
-    private List<int[]> distinctPos = new ArrayList<>();
+    //private List<int[]> distinctPos = new ArrayList<>();
+    private Set<String> distinctPos = new HashSet<>();
 
     private int[][] directions = {
             {-1, 0}, // Up
@@ -37,11 +36,14 @@ public class Guard {
                 }
             }
         }
+
+        System.out.println("Border height: " + guardMap.length + " length: " + guardMap[0].length);
     }
 
     public void move(String[][] guardMap) {
         System.out.println("Move Guard");
         int[] currentPos = startPos;//int[] currentPos = Arrays.copyOf(startPos, startPos.length);
+        distinctPos.add(startPos[0] + "," + startPos[1]);
         int currentDir = 0;//up
 
         while (true) {
@@ -71,19 +73,29 @@ public class Guard {
     }
 
     private int[] travel(int[] currentPos, int[][] directions, int currentDir){
-        //System.out.println("Current Position: " + Arrays.toString(currentPos));
+        System.out.println("Current Position: " + Arrays.toString(currentPos));
+
+        String positionKey = currentPos[0] + "," + currentPos[1];//overhead, contains(currentPos) funktioniert nicht
 
         //check distinct
-        int[] positionCopy = Arrays.copyOf(currentPos, currentPos.length); //damit es nicht mitupdatet
-        if (!distinctPos.contains(positionCopy)) {
+        if (!distinctPos.contains(positionKey)) {
             markedPos++;
-            //System.out.println("Positions -> " + markedPos);
-            distinctPos.add(positionCopy);
+            System.out.println("Positions -> " + markedPos + ", Current Position: [" + currentPos[0] + ", " + currentPos[1] + "]");
+            distinctPos.add(positionKey);
         }
 
         currentPos[0] += directions[currentDir][0];
         currentPos[1] += directions[currentDir][1];
         return currentPos;
+    }
+
+    private boolean containsPosition(List<int[]> positions, int[] pos) {
+        for (int[] p : positions) {
+            if (Arrays.equals(p, pos)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getMarkedPos(){
@@ -93,8 +105,4 @@ public class Guard {
     public int[] getStartPos(){
         return startPos;
     }
-
-    /*public List<int[]> getObstructions(){
-        return obstructions;
-    }*/
 }
