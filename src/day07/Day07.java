@@ -1,42 +1,57 @@
 package day07;
 
-import day06.Guard;
-
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Day07 {
     public static void main(String[] args) {
-        final List<String> equations = readFile();
+        final List<String> equations = DataExtractor.readFile();
 
         System.out.println("Equations: " +
                 String.join("\n", equations)
         );
+
+        int totalCalibrationResult = 0;
+
+        for (String equation : equations) {
+            // Split target and numbers
+            String[] parts = equation.split(":");
+            long targetValue = Long.parseLong(parts[0].trim());
+            String[] numberStrings = parts[1].trim().split(" ");
+            List<Integer> numbers = new ArrayList<>();
+            for (String num : numberStrings) {
+                numbers.add(Integer.parseInt(num));
+            }
+
+            if (canProduceTarget(numbers, targetValue)) {
+                totalCalibrationResult += targetValue;
+            }
+        }
+        System.out.println("Total Calibration Result: " + totalCalibrationResult);//1130288313 too low
     }
 
+    private static boolean canProduceTarget(List<Integer> numbers, long target) {
+        int n = numbers.size();
 
-    static List<String> readFile() {
-        try {
-            File file = new File("Daten/Werte7.txt");
-            Scanner scanner = new Scanner(file);
+        int numOperators = n - 1; // Slots between numbers
+        int totalCombinations = 1 << numOperators; // 2^(numOperators)
 
-            List<String> lines = new ArrayList<>();
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine().trim();
-                lines.add(line);
+        for (int mask = 0; mask < totalCombinations; mask++) {
+            int result = numbers.get(0);
+
+            for (int i = 0; i < numOperators; i++) {
+                if ((mask & (1 << i)) == 0) {
+                    result += numbers.get(i + 1);
+                } else {
+                    result *= numbers.get(i + 1);
+                }
             }
-            scanner.close();
 
-            return lines;
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found");
-            e.printStackTrace();
-            return null;
+            if (result == target) {
+                return true;
+            }
         }
+
+        return false;
     }
 }
