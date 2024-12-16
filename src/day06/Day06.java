@@ -19,7 +19,7 @@ public class Day06 {
 
         guard.move(guardMap);
 
-        System.out.println("Distinct Positions: " + guard.getMarkedPos()); //403 too low
+        System.out.println("Distinct Positions: " + guard.getMarkedPos()); //600 too low
     }
 
 
@@ -36,7 +36,6 @@ public class Day06 {
             }
             scanner.close();
 
-            // List<String[]> -> String[][]
             String[][] result = new String[lines.size()][];
             for(int i = 0; i<result.length; i++) {
                 result[i] = lines.get(i);
