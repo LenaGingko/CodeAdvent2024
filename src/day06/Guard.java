@@ -50,7 +50,7 @@ public class Guard {
 
             if (nextPos[0] < 0 || nextPos[0] >= guardMap.length ||
                     nextPos[1] < 0 || nextPos[1] >= guardMap[0].length) {
-                System.out.println("Grenze! Reached the border.");
+                System.out.println("Grenze!");
                 break;
             }
 
