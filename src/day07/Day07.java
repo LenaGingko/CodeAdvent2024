@@ -7,24 +7,26 @@ public class Day07 {
     public static void main(String[] args) {
         final List<String> equations = DataExtractor.readFile();
 
-        System.out.println("Equations: " +
-                String.join("\n", equations)
-        );
+        //System.out.println("Equations: " + String.join("\n", equations));
 
         int totalCalibrationResult = 0;
 
         for (String equation : equations) {
-            // Split target and numbers
             String[] parts = equation.split(":");
             long targetValue = Long.parseLong(parts[0].trim());
             String[] numberStrings = parts[1].trim().split(" ");
             List<Integer> numbers = new ArrayList<>();
+
             for (String num : numberStrings) {
                 numbers.add(Integer.parseInt(num));
             }
+            System.out.println("Target value: " + targetValue + " = "+
+                    String.join(" ? ", numbers.toString())
+            );
 
             if (canProduceTarget(numbers, targetValue)) {
                 totalCalibrationResult += targetValue;
+                //System.out.println("Calibration: " + totalCalibrationResult);
             }
         }
         System.out.println("Total Calibration Result: " + totalCalibrationResult);//1130288313 too low
@@ -37,21 +39,25 @@ public class Day07 {
         int totalCombinations = 1 << numOperators; // 2^(numOperators)
 
         for (int mask = 0; mask < totalCombinations; mask++) {
-            int result = numbers.get(0);
+            long result = numbers.get(0);
+            StringBuilder equation = new StringBuilder(String.valueOf(numbers.get(0)));
 
             for (int i = 0; i < numOperators; i++) {
                 if ((mask & (1 << i)) == 0) {
                     result += numbers.get(i + 1);
+                    equation.append(" + ").append(numbers.get(i + 1));
                 } else {
                     result *= numbers.get(i + 1);
+                    equation.append(" * ").append(numbers.get(i + 1));
                 }
             }
 
+            System.out.println("Equation: " + equation + " = " + result);
             if (result == target) {
+                System.out.println("SUCCESS!");
                 return true;
             }
         }
-
         return false;
     }
 }
