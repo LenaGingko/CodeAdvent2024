@@ -9,7 +9,7 @@ public class Day07 {
 
         //System.out.println("Equations: " + String.join("\n", equations));
 
-        int totalCalibrationResult = 0;
+        long totalCalibrationResult = 0;
 
         for (String equation : equations) {
             String[] parts = equation.split(":");
@@ -20,13 +20,11 @@ public class Day07 {
             for (String num : numberStrings) {
                 numbers.add(Integer.parseInt(num));
             }
-            System.out.println("Target value: " + targetValue + " = "+
-                    String.join(" ? ", numbers.toString())
-            );
+            //System.out.println("Target value: " + targetValue + " = "+ String.join(" ? ", numbers.toString()));
 
             if (canProduceTarget(numbers, targetValue)) {
                 totalCalibrationResult += targetValue;
-                //System.out.println("Calibration: " + totalCalibrationResult);
+                System.out.println("Calibration: " + totalCalibrationResult);
             }
         }
         System.out.println("Total Calibration Result: " + totalCalibrationResult);//1130288313 too low
@@ -35,8 +33,8 @@ public class Day07 {
     private static boolean canProduceTarget(List<Integer> numbers, long target) {
         int n = numbers.size();
 
-        int numOperators = n - 1; // Slots between numbers
-        int totalCombinations = 1 << numOperators; // 2^(numOperators)
+        int numOperators = n - 1; //wie viele Operatoren
+        int totalCombinations = 1 << numOperators; // 2^operators anstelle von Math.pow https://www.geeksforgeeks.org/shift-operator-in-java/
 
         for (int mask = 0; mask < totalCombinations; mask++) {
             long result = numbers.get(0);
@@ -52,9 +50,9 @@ public class Day07 {
                 }
             }
 
-            System.out.println("Equation: " + equation + " = " + result);
             if (result == target) {
-                System.out.println("SUCCESS!");
+                System.out.println("Equation: " + equation + " = " + result + " should be " + target);
+                //System.out.println("SUCCESS!");
                 return true;
             }
         }
