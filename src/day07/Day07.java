@@ -9,7 +9,8 @@ public class Day07 {
 
         //System.out.println("Equations: " + String.join("\n", equations));
 
-        long totalCalibrationResult = 0;
+        long calibrationPart1 = 0;
+        long calibrationPart2 = 0;
 
         for (String equation : equations) {
             String[] parts = equation.split(":");
@@ -23,11 +24,15 @@ public class Day07 {
             //System.out.println("Target value: " + targetValue + " = "+ String.join(" ? ", numbers.toString()));
 
             if (canProduceTarget(numbers, targetValue)) {
-                totalCalibrationResult += targetValue;
-                System.out.println("Calibration: " + totalCalibrationResult);
+                calibrationPart1 += targetValue;
+            }
+
+            if (canProduceTargetWithConcat(numbers, targetValue)) {
+                calibrationPart2 += targetValue;
             }
         }
-        System.out.println("Total Calibration Result: " + totalCalibrationResult);//1130288313 too low
+        System.out.println("Total Calibration Result: " + calibrationPart1);
+        System.out.println("Total Calibration Result Part 2: " + calibrationPart2);
     }
 
     private static boolean canProduceTarget(List<Integer> numbers, long target) {
@@ -56,6 +61,41 @@ public class Day07 {
                 return true;
             }
         }
+        return false;
+    }
+
+    private static boolean canProduceTargetWithConcat(List<Integer> numbers, long target) {
+        return evaluate(numbers, 1, numbers.get(0), target, String.valueOf(numbers.get(0)));
+    }
+
+    private static boolean evaluate(List<Integer> numbers, int index, long currentValue, long target, String equation) {
+
+        if (index == numbers.size()) {
+            if (currentValue == target) {
+                System.out.println("Equation: " + equation + " = " + currentValue + " should be " + target);
+                return true;
+            }
+            return false;
+        }
+
+        int nextNumber = numbers.get(index);
+
+        // Case 1: Addition '+'
+        if (evaluate(numbers, index + 1, currentValue + nextNumber, target, equation + " + " + nextNumber)) {
+            return true;
+        }
+
+        // Case 2: Multiplication '*'
+        if (evaluate(numbers, index + 1, currentValue * nextNumber, target, equation + " * " + nextNumber)) {
+            return true;
+        }
+
+        // Case 3: Concatenation '||'
+        long concatenatedValue = Long.parseLong("" + currentValue + nextNumber);
+        if (evaluate(numbers, index + 1, concatenatedValue, target, equation + " || " + nextNumber)) {
+            return true;
+        }
+
         return false;
     }
 }
