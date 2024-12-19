@@ -2,35 +2,38 @@ package day09;
 
 public class DiskMap {
     private long checksum = 0;
-    private String line;
+    private final String line;
     private String formattedLine;
     private String compressedLine;
 
 
     DiskMap(String line) {
         this.line = line;
+        this.format();
+        this.compress();
+        this.calcChecksum();
     }
 
     public void format(){
         int id = 0;
-        String newLine = "";
+        StringBuilder newLine = new StringBuilder();
         boolean isFileBlock = true; //notFreeSpace
 
         for(int i = 0; i < line.length(); i++){
             int number = Character.getNumericValue(line.charAt(i));
             if(isFileBlock) {
                 for(int j = 0; j < number; j++){
-                    newLine = newLine.concat(Integer.toString(id)); // 2 -> 00
+                    newLine.append(id); // 2 -> 00
                 }
                 id++;
             } else {
                 for(int j = 0; j < number; j++) {
-                    newLine = newLine.concat(".");
+                    newLine.append('.');
                 }
             }
             isFileBlock = !isFileBlock;
         }
-        this.formattedLine = newLine;
+        this.formattedLine = newLine.toString();
     }
 
     public void compress(){
@@ -73,12 +76,27 @@ public class DiskMap {
         return -1;
     }
     //long checksum = compressedFiles.getChecksum();
+    private void calcChecksum(){
+        int pos = 0;
+        for (char c: compressedLine.toCharArray()) {
+            if(c == '.'){
+                break; }
 
-    public long getChecksum() {
-        return checksum;
+            checksum += (long) Character.getNumericValue(c) * pos;
+            if(pos < 10){System.out.println( pos + " * " + Character.getNumericValue(c) + " = " + checksum);}
+            pos++;
+        }
+    }
+
+    public long getChecksum() { //1156401938 too low //92625219623 too low
+        return this.checksum;
+    }
+
+    public String getFormattedLine() {
+        return this.formattedLine;
     }
 
     public String toString(){
-        return "DiskMap formatted:\n" + this.formattedLine + "\nDiskMap compressed:\n" + this.compressedLine;
+        return  "DiskMap compressed:\n" + this.compressedLine +"\nCheckSum: " + checksum; //"DiskMap compressed:\n" + this.compressedLine +
     }
 }
