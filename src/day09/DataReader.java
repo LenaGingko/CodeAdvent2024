@@ -1,9 +1,7 @@
-package day08;
+package day09;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class DataReader {
