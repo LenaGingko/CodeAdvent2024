@@ -75,28 +75,37 @@ public class DiskMap {
         }
         return -1;
     }
-    //long checksum = compressedFiles.getChecksum();
-    private void calcChecksum(){
+    public void calcChecksum(){
         int pos = 0;
         for (char c: compressedLine.toCharArray()) {
             if(c == '.'){
                 break; }
 
             checksum += (long) Character.getNumericValue(c) * pos;
-            if(pos < 10){System.out.println( pos + " * " + Character.getNumericValue(c) + " = " + checksum);}
+            System.out.print( pos + " * " + Character.getNumericValue(c) + " = " + checksum + " | ");
+            if(pos % 10 == 0){ System.out.print("\n"); }
             pos++;
         }
     }
 
-    public long getChecksum() { //1156401938 too low //92625219623 too low
-        return this.checksum;
+    public long getChecksum() {
+        return checksum;
     }
 
     public String getFormattedLine() {
-        return this.formattedLine;
+        return formattedLine;
+    }
+
+    public String getCompressedLine() {
+        return compressedLine;
+    }
+
+    //für test
+    public void setCompressedLine(String compressedLine) {
+        this.compressedLine = compressedLine;
     }
 
     public String toString(){
-        return  "DiskMap compressed:\n" + this.compressedLine +"\nCheckSum: " + checksum; //"DiskMap compressed:\n" + this.compressedLine +
+        return  "DiskMap formatted:\n" + this.formattedLine + "DiskMap compressed:\n" + this.compressedLine +"\nCheckSum: " + checksum; //"DiskMap compressed:\n" + this.compressedLine +
     }
 }

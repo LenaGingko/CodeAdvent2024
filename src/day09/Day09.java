@@ -8,7 +8,9 @@ public class Day09 {
         DiskMap diskMap = new DiskMap(line);
         System.out.println(diskMap);
 
-        //System.out.println("Disk Map Length: " + line.length());
+        System.out.println("Disk Map Length: " + line.length());
+        System.out.println("Disk Map Length formatted: " + diskMap.getFormattedLine().length());
+        System.out.println("Disk Map Length compressed: " + diskMap.getCompressedLine().length());
         //System.out.println("Disk Map: " + line); //length 19999
     }
 }
