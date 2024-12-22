@@ -1,5 +1,7 @@
 package day09;
 
+import java.util.ArrayList;
+
 public class DiskMap {
     private long checksum = 0;
     private final String line;
@@ -14,36 +16,55 @@ public class DiskMap {
         this.calcChecksum();
     }
 
-    public void format(){
-        int id = 0;
-        StringBuilder newLine = new StringBuilder();
-        boolean isFileBlock = true; //notFreeSpace
+    public static class Block {
+        int id;
+        int count;
 
-        for(int i = 0; i < line.length(); i++){
-            int number = Character.getNumericValue(line.charAt(i));
-            if(isFileBlock) {
-                for(int j = 0; j < number; j++){
-                    newLine.append(id); // 2 -> 00
+        public Block(int id, int count) {
+            this.id = id;
+            this.count = count;
+        }
+    }
+
+    public void format() {
+        ArrayList<Block> blocks = new ArrayList<>();
+        boolean isFileBlock = true;
+        int id = 0;
+
+        for (char c : line.toCharArray()) {
+            int number = Character.getNumericValue(c);
+            if (isFileBlock) {
+                if (blocks.isEmpty() || blocks.get(blocks.size() - 1).id != id) {
+                    blocks.add(new Block(id, number));
+                } else {
+                    blocks.get(blocks.size() - 1).count += number;
                 }
                 id++;
             } else {
-                for(int j = 0; j < number; j++) {
-                    newLine.append('.');
-                }
+                blocks.add(new Block(-1, number));
             }
+
             isFileBlock = !isFileBlock;
         }
+
+        StringBuilder newLine = new StringBuilder();
+        for (Block block : blocks) {
+            if (block.id == -1) {
+                newLine.append(".".repeat(block.count));
+            } else {
+                newLine.append(String.valueOf(block.id).repeat(block.count));
+            }
+        }
         this.formattedLine = newLine.toString();
+        System.out.println("Formatted Line Length: " + this.formattedLine.length());
     }
 
-    public void compress(){
-
+    public void compress() {
         StringBuilder string = new StringBuilder(formattedLine);
         int leftEmpty;
         int rightFile;
 
-        while(true){
-            //Update
+        while (true) {
             leftEmpty = getLeftEmpty(string);
             rightFile = getRightFile(string);
 
@@ -51,10 +72,10 @@ public class DiskMap {
                 break;
             }
 
-            //Austausch
             string.setCharAt(leftEmpty, string.charAt(rightFile));
-            string.setCharAt(rightFile, '.'); //kein neuer charAt Aufruf nötig
+            string.setCharAt(rightFile, '.'); //no new charAt needed
         }
+
         this.compressedLine = string.toString();
     }
 
@@ -75,18 +96,34 @@ public class DiskMap {
         }
         return -1;
     }
-    public void calcChecksum(){
+    public void calcChecksum() {
         int pos = 0;
-        for (char c: compressedLine.toCharArray()) {
-            if(c == '.'){
-                break; }
+        StringBuilder idBuilder = new StringBuilder();
 
-            checksum += (long) Character.getNumericValue(c) * pos;
-            System.out.print( pos + " * " + Character.getNumericValue(c) + " = " + checksum + " | ");
-            if(pos % 10 == 0){ System.out.print("\n"); }
+        for (char c : this.compressedLine.toCharArray()) {
+            if (c == '.') {
+                idBuilder.setLength(0);
+                continue;
+            }
+
+            if (Character.isDigit(c)) {
+                idBuilder.append(c);
+            } else {
+                if (idBuilder.length() > 0) {
+                    int id = Integer.parseInt(idBuilder.toString());
+                    checksum += (long) id * pos;
+                    idBuilder.setLength(0);
+                }
+            }
             pos++;
         }
+
+        if (idBuilder.length() > 0) {
+            int id = Integer.parseInt(idBuilder.toString());
+            checksum += (long) id * pos;
+        }
     }
+
 
     public long getChecksum() {
         return checksum;
@@ -106,6 +143,6 @@ public class DiskMap {
     }
 
     public String toString(){
-        return  "DiskMap formatted:\n" + this.formattedLine + "DiskMap compressed:\n" + this.compressedLine +"\nCheckSum: " + checksum; //"DiskMap compressed:\n" + this.compressedLine +
+        return  "\nCheckSum: " + checksum; //"DiskMap compressed:\n" + this.compressedLine +"DiskMap formatted:\n" + this.formattedLine +
     }
 }
