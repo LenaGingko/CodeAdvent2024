@@ -5,11 +5,10 @@ import java.util.ArrayList;
 public class DiskMap {
     private long checksum = 0;
     private final String line;
-    private String formattedLine;
-    private String compressedLine;
+    private ArrayList<Block> formattedLine = new ArrayList<>();
+    private ArrayList<Block> compressedLine = new ArrayList<>();
 
-
-    DiskMap(String line) {
+    public DiskMap(String line) {
         this.line = line;
         this.format();
         this.compress();
@@ -19,7 +18,6 @@ public class DiskMap {
     public static class Block {
         int id;
         int count;
-
         public Block(int id, int count) {
             this.id = id;
             this.count = count;
@@ -27,122 +25,127 @@ public class DiskMap {
     }
 
     public void format() {
-        ArrayList<Block> blocks = new ArrayList<>();
         boolean isFileBlock = true;
         int id = 0;
+        int currentId = -1;
 
         for (char c : line.toCharArray()) {
             int number = Character.getNumericValue(c);
+
             if (isFileBlock) {
-                if (blocks.isEmpty() || blocks.get(blocks.size() - 1).id != id) {
-                    blocks.add(new Block(id, number));
+                if (currentId != id) {
+                    formattedLine.add(new Block(id, number));
+                    currentId = id; // Update current ID
                 } else {
-                    blocks.get(blocks.size() - 1).count += number;
+                    // Extend the current block
+                    Block lastBlock = formattedLine.get(formattedLine.size() - 1);
+                    lastBlock.count += number;
                 }
                 id++;
             } else {
-                blocks.add(new Block(-1, number));
+                if (!formattedLine.isEmpty() && formattedLine.get(formattedLine.size() - 1).id == -1) {
+                    // Extend the last free block
+                    Block lastBlock = formattedLine.get(formattedLine.size() - 1);
+                    lastBlock.count += number;
+                } else {
+                    // Add a new free block
+                    formattedLine.add(new Block(-1, number));
+                }
             }
-
             isFileBlock = !isFileBlock;
         }
-
-        StringBuilder newLine = new StringBuilder();
-        for (Block block : blocks) {
-            if (block.id == -1) {
-                newLine.append(".".repeat(block.count));
-            } else {
-                newLine.append(String.valueOf(block.id).repeat(block.count));
-            }
-        }
-        this.formattedLine = newLine.toString();
-        System.out.println("Formatted Line Length: " + this.formattedLine.length());
     }
+
 
     public void compress() {
-        StringBuilder string = new StringBuilder(formattedLine);
-        int leftEmpty;
-        int rightFile;
+        ArrayList<Block> newCompressedLine = new ArrayList<>();
 
-        while (true) {
-            leftEmpty = getLeftEmpty(string);
-            rightFile = getRightFile(string);
-
-            if (leftEmpty == -1 || rightFile == -1 || leftEmpty > rightFile) {
-                break;
-            }
-
-            string.setCharAt(leftEmpty, string.charAt(rightFile));
-            string.setCharAt(rightFile, '.'); //no new charAt needed
-        }
-
-        this.compressedLine = string.toString();
-    }
-
-    private int getLeftEmpty(StringBuilder string){
-        for (int i = 0; i < string.length(); i++) {
-            if(string.charAt(i) == '.'){
-                return i;
+        //copy  to newCompressedLine
+        for (Block block : this.formattedLine) {
+            if (block.id != -1) {
+                //file blocks
+                newCompressedLine.add(new Block(block.id, block.count));
+            } else {
+                //empty space blocks
+                newCompressedLine.add(new Block(-1, block.count));
             }
         }
-        return -1;
+
+        int i = 0;
+        int j = newCompressedLine.size() - 1;
+
+        while (i < j) {
+            //left
+            while (i < newCompressedLine.size() && newCompressedLine.get(i).id != -1) {
+                i++;
+            }
+
+            //right
+            while (j >= 0 && newCompressedLine.get(j).id == -1) {
+                j--;
+            }
+
+            if (i < j) {
+                Block temp = newCompressedLine.get(i);
+                newCompressedLine.set(i, newCompressedLine.get(j));
+                newCompressedLine.set(j, temp);
+                i++;
+                j--;
+            }
+            System.out.println(formatAsString(newCompressedLine));
+        }
+
+        this.compressedLine = newCompressedLine;
     }
 
-    private int getRightFile(StringBuilder string){
-        for (int i = string.length()-1; i >= 0; i--) {
-            if(string.charAt(i) != '.'){
-                return i;
-            }
-        }
-        return -1;
-    }
     public void calcChecksum() {
+        long checksum = 0;
         int pos = 0;
-        StringBuilder idBuilder = new StringBuilder();
 
-        for (char c : this.compressedLine.toCharArray()) {
-            if (c == '.') {
-                idBuilder.setLength(0);
+        for (Block block : compressedLine) {
+            //leere Blöcke
+            if (block.id == -1) {
                 continue;
             }
 
-            if (Character.isDigit(c)) {
-                idBuilder.append(c);
-            } else {
-                if (idBuilder.length() > 0) {
-                    int id = Integer.parseInt(idBuilder.toString());
-                    checksum += (long) id * pos;
-                    idBuilder.setLength(0);
-                }
+            for (int i = 0; i < block.count; i++) {
+                checksum += Long.parseLong(String.valueOf(block.id)) * pos++;
             }
-            pos++;
         }
 
-        if (idBuilder.length() > 0) {
-            int id = Integer.parseInt(idBuilder.toString());
-            checksum += (long) id * pos;
-        }
+        this.checksum = checksum;
     }
-
 
     public long getChecksum() {
         return checksum;
     }
 
-    public String getFormattedLine() {
+    public ArrayList<Block> getFormattedLine() {
         return formattedLine;
     }
 
-    public String getCompressedLine() {
+    public ArrayList<Block> getCompressedLine() {
         return compressedLine;
     }
 
     //für test
-    public void setCompressedLine(String compressedLine) {
+    public void setCompressedLine(ArrayList<Block> compressedLine) {
         this.compressedLine = compressedLine;
     }
 
-    public String toString(){
-        return  "\nCheckSum: " + checksum; //"DiskMap compressed:\n" + this.compressedLine +"DiskMap formatted:\n" + this.formattedLine +
+    public String toString() {
+        return "Checksum: " + checksum;
+    }
+
+    public String formatAsString(ArrayList<Block> line) {
+        StringBuilder sb = new StringBuilder();
+        for (Block block : line) {
+            if (block.id == -1) {
+                sb.append(".".repeat(block.count));
+            } else {
+                sb.append(String.valueOf(block.id).repeat(block.count));
+            }
+        }
+        return sb.toString();
     }
 }
