@@ -6,7 +6,7 @@ public class DiskMap {
     private long checksum = 0;
     private final String line;
     private ArrayList<Block> formattedLine = new ArrayList<>();
-    private ArrayList<Block> compressedLine = new ArrayList<>();
+    private String compressedLine;
 
     public DiskMap(String line) {
         this.line = line;
@@ -58,62 +58,59 @@ public class DiskMap {
 
 
     public void compress() {
-        ArrayList<Block> newCompressedLine = new ArrayList<>();
+        //ArrayList<Block> newCompressedLine = new ArrayList<>();
+        StringBuilder string = new StringBuilder(formatAsString(this.formattedLine));
+        int leftEmpty;
+        int rightFile;
 
-        //copy  to newCompressedLine
-        for (Block block : this.formattedLine) {
-            if (block.id != -1) {
-                //file blocks
-                newCompressedLine.add(new Block(block.id, block.count));
-            } else {
-                //empty space blocks
-                newCompressedLine.add(new Block(-1, block.count));
+        while(true){
+            //Update
+            leftEmpty = getLeftEmpty(string);
+            rightFile = getRightFile(string);
+
+            if (leftEmpty == -1 || rightFile == -1 || leftEmpty > rightFile) {
+                break;
             }
+
+            //Austausch
+            string.setCharAt(leftEmpty, string.charAt(rightFile));
+            string.setCharAt(rightFile, '.'); //kein neuer charAt Aufruf nötig
+
+            System.out.println("Test: " + string);
         }
 
-        int i = 0;
-        int j = newCompressedLine.size() - 1;
-
-        while (i < j) {
-            //left
-            while (i < newCompressedLine.size() && newCompressedLine.get(i).id != -1) {
-                i++;
-            }
-
-            //right
-            while (j >= 0 && newCompressedLine.get(j).id == -1) {
-                j--;
-            }
-
-            if (i < j) {
-                Block temp = newCompressedLine.get(i);
-                newCompressedLine.set(i, newCompressedLine.get(j));
-                newCompressedLine.set(j, temp);
-                i++;
-                j--;
-            }
-            System.out.println(formatAsString(newCompressedLine));
-        }
-
-        this.compressedLine = newCompressedLine;
+        this.compressedLine = string.toString();
     }
 
-    public void calcChecksum() {
-        long checksum = 0;
-        int pos = 0;
-
-        for (Block block : compressedLine) {
-            //leere Blöcke
-            if (block.id == -1) {
-                continue;
-            }
-
-            for (int i = 0; i < block.count; i++) {
-                checksum += Long.parseLong(String.valueOf(block.id)) * pos++;
+    private int getLeftEmpty(StringBuilder string){
+        for (int i = 0; i < string.length(); i++) {
+            if(string.charAt(i) == '.'){
+                return i;
             }
         }
+        return -1;
+    }
 
-        this.checksum = checksum;
+    private int getRightFile(StringBuilder string){
+        for (int i = string.length()-1; i >= 0; i--) {
+            if(string.charAt(i) != '.'){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void calcChecksum(){
+        int pos = 0;
+        for (char c: compressedLine.toCharArray()) {
+            if(c == '.'){
+                break; }
+
+            checksum += (long) Character.getNumericValue(c) * pos;
+            System.out.print( pos + " * " + Character.getNumericValue(c) + " = " + checksum + " | ");
+            if(pos % 10 == 0){ System.out.print("\n"); }
+            pos++;
+        }
     }
 
     public long getChecksum() {
@@ -124,12 +121,12 @@ public class DiskMap {
         return formattedLine;
     }
 
-    public ArrayList<Block> getCompressedLine() {
+    public String getCompressedLine() {
         return compressedLine;
     }
 
     //für test
-    public void setCompressedLine(ArrayList<Block> compressedLine) {
+    public void setCompressedLine(String compressedLine) {
         this.compressedLine = compressedLine;
     }
 

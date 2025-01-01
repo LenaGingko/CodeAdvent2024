@@ -23,35 +23,20 @@ public class DiskMapTest {
         DiskMap diskMap = new DiskMap(denseInput);
 
         System.out.println("Formatted Line: " + diskMap.formatAsString(diskMap.getFormattedLine()));
-        System.out.println("Compressed Line: " + diskMap.formatAsString(diskMap.getCompressedLine()));
+        System.out.println("Compressed Line: " + diskMap.getCompressedLine());
 
-        String actualCompressedLine = diskMap.formatAsString(diskMap.getCompressedLine());
+        String actualCompressedLine = diskMap.getCompressedLine();
         assertEquals(expectedCompressedLine, actualCompressedLine);
     }
 
     @Test
     public void testCalcChecksum() {
+
         String compressedLine = "0099811188827773336446555566..............";
         long expectedChecksum = 1928;
 
         DiskMap diskMap = new DiskMap("");
-
-        ArrayList<DiskMap.Block> compressedBlocks = new ArrayList<>();
-        char currentChar = compressedLine.charAt(0);
-        int count = 0;
-
-        for (char c : compressedLine.toCharArray()) {
-            if (c == currentChar) {
-                count++;
-            } else {
-                compressedBlocks.add(new DiskMap.Block(currentChar == '.' ? -1 : Character.getNumericValue(currentChar), count));
-                currentChar = c;
-                count = 1;
-            }
-        }
-        compressedBlocks.add(new DiskMap.Block(currentChar == '.' ? -1 : Character.getNumericValue(currentChar), count));
-
-        diskMap.setCompressedLine(compressedBlocks);
+        diskMap.setCompressedLine(compressedLine);
         diskMap.calcChecksum();
 
         assertEquals(expectedChecksum, diskMap.getChecksum());
