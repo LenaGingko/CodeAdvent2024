@@ -3,6 +3,7 @@ package day10;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -10,25 +11,23 @@ public class DataReader {
 
     private DataReader() {}
 
-    static String[][] readFile() {
+    static int[][] readFile() {
         try {
             File file = new File("Daten/Werte10.txt");
             Scanner scanner = new Scanner(file);
 
-            List<String[]> lines = new ArrayList<>();
+            List<int[]> lines = new ArrayList<>();
+
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim();
-                String[] splitted = line.split("");
-                lines.add(splitted);
+                int[] row = Arrays.stream(line.split("")) // Split string
+                        .mapToInt(Integer::parseInt)
+                        .toArray();
+                lines.add(row);
             }
             scanner.close();
+            return lines.toArray(new int[0][]);
 
-            String[][] result = new String[lines.size()][];
-            for(int i = 0; i<result.length; i++) {
-                result[i] = lines.get(i);
-            }
-
-            return result;
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
             e.printStackTrace();
