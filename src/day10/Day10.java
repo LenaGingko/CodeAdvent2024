@@ -7,6 +7,7 @@ public class Day10 {
         final int[][] rawMap = DataReader.readFile();
 
         Map topoMap = new Map(rawMap);
+        int sumOfScores = topoMap.getSumOfScores();
 
         printMap(rawMap);
     }

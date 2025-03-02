@@ -11,7 +11,7 @@ public class Map {
     //A trailhead is any position that starts one or more hiking trails - here, these positions will always have height 0.
     // Assembling more fragments of pages, you establish that a trailhead's score is the number of 9-height positions reachable from that trailhead via a hiking trail.
     // In the above example, the single trailhead in the top left corner has a score of 1 because it can reach a single 9 (the one in the bottom left).
-
+    private int sumOfScores = 0;
 
     public Map(int[][] map) {
         this.map = map;
@@ -68,5 +68,9 @@ public class Map {
 
     public void setTrailhead(String[][] trailhead) {
         this.trailhead = trailhead;
+    }
+
+    public int getSumOfScores() {
+        return sumOfScores;
     }
 }
